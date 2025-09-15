@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Styles pour les menus déroulants */
+.dropdown-menu {
+  transition: all 0.2s ease-in-out;
+  transform: translateY(-10px);
+}
+
+.group:hover .dropdown-menu {
+  transform: translateY(0);
+}
+
+/* Styles pour les menus mobiles */
+.mobile-menu-slide {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.mobile-menu-slide.show {
+  max-height: 500px;
+}
+
+/* Animation pour les notifications */
+.notification-pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .xs\:h-16 {
+    height: 4rem;
+  }
+  .xs\:w-16 {
+    width: 4rem;
+  }
+}
+
+/* Touch targets pour mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Scrollbar personnalisée */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c084fc;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a855f7;
+} 
