@@ -12,6 +12,7 @@ const Header = () => {
   const [mobileDashboardOpen, setMobileDashboardOpen] = useState(false);
   const [mobileRecruitersOpen, setMobileRecruitersOpen] = useState(false);
   const [mobileBlogOpen, setMobileBlogOpen] = useState(false);
+  const [mobileOffersOpen, setMobileOffersOpen] = useState(false);
 
   const location = useLocation();
 
@@ -56,6 +57,11 @@ const Header = () => {
   };
 
   const toggleMobileMenu = () => {
+    // Fermer les sous-menus avant d'ouvrir le menu burger
+    setMobileDashboardOpen(false);
+    setMobileRecruitersOpen(false);
+    setMobileBlogOpen(false);
+    setMobileOffersOpen(false);
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
@@ -74,6 +80,9 @@ const Header = () => {
       case 'mobile-blog':
         setMobileBlogOpen(!mobileBlogOpen);
         break;
+      case 'mobile-offers':
+        setMobileOffersOpen(!mobileOffersOpen);
+        break;
       default:
         break;
     }
@@ -90,14 +99,14 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center py-2 sm:py-3 lg:py-4">
           {/* Logo */}
-          <div className="flex items-center min-w-0 flex-1 sm:flex-initial">
+          <div className="flex items-center min-w-0">
             <Link to="/">
               <img src="/vite.svg" alt="Destiny Jobs Admin" className="h-10 w-10 xs:h-16 xs:w-16 sm:h-20 sm:w-20" />
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden xl:flex space-x-4 2xl:space-x-6">
+          {/* Desktop Navigation - Centered */}
+          <nav className="hidden xl:flex flex-1 justify-center space-x-4 2xl:space-x-6">
             {NAVIGATION_MENUS.MAIN.map((menu) => (
               <div key={menu.id}>
                 {menu.children ? (
@@ -213,10 +222,8 @@ const Header = () => {
               </span>
               <i className="fas fa-chevron-down text-xs"></i>
             </button>
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="xl:hidden flex-shrink-0 ml-1 sm:ml-2">
+            {/* Mobile menu button */}
             <button type="button" className="text-gray-700 hover:text-fuchsia-600 focus:outline-none focus:text-fuchsia-600 p-2" onClick={toggleMobileMenu}>
               <i className="fas fa-bars text-base sm:text-lg"></i>
             </button>
@@ -277,13 +284,15 @@ const Header = () => {
                   >
                     <span><i className={`${menu.icon} mr-2`}></i>{menu.label}</span>
                     <i className={`fas fa-chevron-down text-xs transform transition-transform ${
-                      menu.id === 'recruiters' ? mobileRecruitersOpen :
-                      menu.id === 'blog' ? mobileBlogOpen : false
-                    } ? 'rotate-180' : ''}`}></i>
+                        menu.id === 'recruiters' ? mobileRecruitersOpen :
+                        menu.id === 'blog' ? mobileBlogOpen :
+                        menu.id === 'offers' ? mobileOffersOpen : false
+                      } ? 'rotate-180' : ''}`}></i>
                   </button>
                   <div className={`mobile-menu-slide ml-4 ${
                     menu.id === 'recruiters' ? mobileRecruitersOpen :
-                    menu.id === 'blog' ? mobileBlogOpen : false
+                    menu.id === 'blog' ? mobileBlogOpen :
+                    menu.id === 'offers' ? mobileOffersOpen : false
                   } ? 'show' : ''}`}>
                     {menu.children.map((subMenu) => (
                       <Link 

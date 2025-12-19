@@ -18,18 +18,25 @@ export const AuthProvider = ({ children }) => {
 
   // Initialiser l'état d'authentification au chargement
   useEffect(() => {
-    const initializeAuth = () => {
+    const initializeAuth = async () => {
       try {
-        const currentUser = authService.getCurrentUser()
-        if (currentUser && authService.isAuthenticated()) {
-          setUser(currentUser)
-          // Configurer le rafraîchissement automatique du token
-          tokenService.setupAutoRefresh()
+        // Vérifier d'abord si le token est expiré ou sur le point d'expirer
+        if (authService.isAuthenticated()) {
+          // Rafraîchir le token si nécessaire
+          await tokenService.refreshTokenIfNeeded()
+          
+          // Récupérer les informations de l'utilisateur
+          const currentUser = await authService.getCurrentUser()
+          if (currentUser) {
+            setUser(currentUser)
+            // Configurer le rafraîchissement automatique du token
+            tokenService.setupAutoRefresh()
+          }
         }
       } catch (error) {
         console.error('Erreur lors de l\'initialisation de l\'auth:', error)
         // Nettoyer le stockage si corrompu
-        authService.logout()
+        await authService.logout()
       } finally {
         setLoading(false)
       }
