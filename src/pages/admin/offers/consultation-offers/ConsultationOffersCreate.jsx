@@ -22,7 +22,8 @@ const ConsultationOffersCreate = () => {
     region: '',
     documents: null,
     site_url: '',
-    admin_company_logo: null
+    admin_company_logo: null,
+    application_deadline: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -110,7 +111,8 @@ const ConsultationOffersCreate = () => {
         region: consultationData.region?.id?.toString() || '',
         documents: null,
         site_url: consultationData.site_url || '',
-        admin_company_logo: null
+        admin_company_logo: null,
+        application_deadline: consultationData.application_deadline ? consultationData.application_deadline.slice(0, 16) : ''
       });
 
       // Charger les régions si un pays est sélectionné
@@ -177,6 +179,13 @@ const ConsultationOffersCreate = () => {
 
       if (formData.admin_company_logo) {
         dataToSend.append('admin_company_logo', formData.admin_company_logo);
+      }
+
+      // Ajouter la date limite de candidature au format ISO 8601
+      if (formData.application_deadline) {
+        const deadline = new Date(formData.application_deadline);
+        deadline.setHours(23, 59, 59, 999);
+        dataToSend.append('application_deadline', deadline.toISOString());
       }
 
       if (isEditing && currentConsultation) {
@@ -385,24 +394,42 @@ const ConsultationOffersCreate = () => {
             </div>
           </div>
 
-          {/* Site Web */}
+          {/* Site Web et Date limite */}
           <div className="px-8 py-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Site Web</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Site Web et Date limite</h2>
 
-            <div>
-              <label htmlFor="site_url" className="block text-sm font-semibold text-gray-700 mb-2">
-                URL du site <span className="text-red-600">*</span>
-              </label>
-              <input
-                type="url"
-                id="site_url"
-                name="site_url"
-                required
-                value={formData.site_url}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-                placeholder="https://example.com"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="site_url" className="block text-sm font-semibold text-gray-700 mb-2">
+                  URL du site <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="url"
+                  id="site_url"
+                  name="site_url"
+                  required
+                  value={formData.site_url}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                  placeholder="https://example.com"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="application_deadline" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Date limite de candidature <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  id="application_deadline"
+                  name="application_deadline"
+                  required
+                  value={formData.application_deadline}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: JJ/MM/YYYY HH:MM</p>
+              </div>
             </div>
           </div>
 

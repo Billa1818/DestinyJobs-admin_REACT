@@ -4,6 +4,7 @@ import StatCard from '../../components/StatCard';
 import AdvancedStatCard from '../../components/AdvancedStatCard';
 import MultiMetricCard from '../../components/MultiMetricCard';
 import CircularProgressCard from '../../components/CircularProgressCard';
+import Loader from '../../components/Loader';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,16 @@ export default function Dashboard() {
     return `${num.toFixed(1)}%`;
   };
 
+  const formatCurrency = (num) => {
+    if (num === null || num === undefined) return '0 FCFA';
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XOF', // FCFA
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
+  };
+
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'healthy': return 'text-green-600';
@@ -79,17 +90,7 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-indigo-600 mx-auto mb-6"></div>
-          <p className="text-gray-600 text-lg">Chargement des statistiques...</p>
-          <div className="mt-4 w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div className="h-full bg-indigo-600 rounded-full animate-pulse"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader size="lg" text="Chargement des statistiques..." color="indigo" />;
   }
 
   if (error) {
@@ -114,20 +115,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100 py-8">
+    <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* En-tête */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            Tableau de Bord
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Vue d'ensemble complète de la plateforme DestinyJobs avec des métriques en temps réel
-          </p>
-          <div className="mt-4 flex justify-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-            <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+        <div className="mb-8">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Tableau de Bord</h1>
+              <p className="mt-2 text-gray-600">Vue d'ensemble complète de la plateforme DestinyJobs avec des métriques en temps réel</p>
+            </div>
           </div>
         </div>
 
@@ -316,10 +312,10 @@ export default function Dashboard() {
 
         {/* Statistiques Blog et Applications avec design moderne */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <i className="fas fa-blog mr-3"></i>
+          <div className="bg-white rounded-lg shadow border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <i className="fas fa-blog mr-3 text-blue-600"></i>
                 Statistiques Blog
               </h3>
             </div>
@@ -353,10 +349,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-500 to-blue-600 px-6 py-4">
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <i className="fas fa-file-alt mr-3"></i>
+          <div className="bg-white rounded-lg shadow border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <i className="fas fa-file-alt mr-3 text-green-600"></i>
                 Statistiques Applications
               </h3>
             </div>
@@ -398,10 +394,10 @@ export default function Dashboard() {
 
         {/* Statistiques Système et Temps Réel avec design moderne */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-4">
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <i className="fas fa-server mr-3"></i>
+          <div className="bg-white rounded-lg shadow border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <i className="fas fa-server mr-3 text-purple-600"></i>
                 Santé du Système
               </h3>
             </div>
@@ -445,10 +441,10 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 to-red-600 px-6 py-4">
-              <h3 className="text-lg font-semibold text-white flex items-center">
-                <i className="fas fa-clock mr-3"></i>
+          <div className="bg-white rounded-lg shadow border border-gray-100 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <i className="fas fa-clock mr-3 text-orange-600"></i>
                 Temps Réel
               </h3>
             </div>
@@ -478,10 +474,10 @@ export default function Dashboard() {
         </div>
 
         {/* Statistiques Abonnements avec design moderne */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4">
-            <h3 className="text-lg font-semibold text-white flex items-center">
-              <i className="fas fa-credit-card mr-3"></i>
+        <div className="bg-white rounded-lg shadow border border-gray-100 overflow-hidden mb-8">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 flex items-center">
+              <i className="fas fa-credit-card mr-3 text-emerald-600"></i>
               Statistiques Abonnements
             </h3>
           </div>
@@ -491,7 +487,7 @@ export default function Dashboard() {
                 { label: 'Total Abonnements', value: stats.subscriptions?.total_subscriptions, color: 'blue', icon: 'fa-credit-card' },
                 { label: 'Actifs', value: stats.subscriptions?.active_subscriptions, color: 'green', icon: 'fa-check-circle' },
                 { label: 'Expirés', value: stats.subscriptions?.expired_subscriptions, color: 'red', icon: 'fa-times-circle' },
-                { label: 'Revenus Totaux', value: `${formatNumber(stats.subscriptions?.total_revenue || 0)}€`, color: 'emerald', icon: 'fa-dollar-sign' }
+                { label: 'Revenus Totaux', value: formatCurrency(stats.subscriptions?.total_revenue || 0), color: 'emerald', icon: 'fa-dollar-sign' }
               ].map((metric) => (
                 <div key={metric.label} className="text-center">
                   <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-${metric.color}-100 text-${metric.color}-600 mb-4`}>
@@ -507,13 +503,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Bouton de rafraîchissement avec design moderne */}
+        {/* Bouton de rafraîchissement */}
         <div className="text-center">
           <button
             onClick={loadDashboardData}
-            className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-2xl shadow-lg text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-4 focus:ring-indigo-300 transform hover:scale-105 transition-all duration-300"
+            className="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg shadow text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            <i className="fas fa-sync-alt mr-3 animate-spin"></i>
+            <i className="fas fa-sync-alt mr-2"></i>
             Rafraîchir les données
           </button>
         </div>

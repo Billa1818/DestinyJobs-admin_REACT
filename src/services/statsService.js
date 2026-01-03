@@ -171,7 +171,7 @@ const statsService = {
   // Subscriptions - Statistiques des Abonnements
   async getSubscriptionStats() {
     try {
-      return await apiClient.get('/api/subscriptions/stats/');
+      return await apiClient.get('/api/subscription/stats/');
     } catch (error) {
       throw handleApiError(error);
     }

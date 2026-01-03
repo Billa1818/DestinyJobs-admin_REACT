@@ -267,10 +267,10 @@ const ConsultationOfferDetail = () => {
               </div>
             )}
 
-            {/* Localisation */}
+            {/* Localisation et Date limite */}
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Localisation</h2>
-              <div className="grid grid-cols-2 gap-4">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">Localisation et Date limite</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Pays</p>
                   <p className="text-sm text-gray-900 mt-1">{offer.country?.name || offer.company_details?.country || 'Non spécifiée'}</p>
@@ -279,6 +279,15 @@ const ConsultationOfferDetail = () => {
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Région</p>
                   <p className="text-sm text-gray-900 mt-1">{offer.region?.name || offer.company_details?.region || 'Non spécifiée'}</p>
                 </div>
+                {offer.application_deadline && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Date limite de candidature</p>
+                    <p className="text-sm text-gray-900 mt-1">
+                      <i className="fas fa-calendar-alt mr-1 text-fuchsia-600"></i>
+                      {formatDate(offer.application_deadline)}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 

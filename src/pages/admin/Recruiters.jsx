@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ROUTES } from '../../routers'
 import { recruiterService } from '../../services'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import Loader from '../../components/Loader'
 
 export default function Recruiters() {
   const [recruiters, setRecruiters] = useState([])
@@ -379,13 +380,7 @@ export default function Recruiters() {
 
 
   if (loading && pagination.page === 1) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600"></div>
-        </div>
-      </div>
-    )
+    return <Loader size="lg" text="Chargement des recruteurs..." color="purple" />
   }
 
   return (

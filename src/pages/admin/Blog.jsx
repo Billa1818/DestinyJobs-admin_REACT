@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { blogService } from '../../services';
+import Loader from '../../components/Loader';
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -106,20 +107,7 @@ export default function Blog() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader size="lg" text="Chargement des articles..." color="blue" />;
   }
 
   return (
