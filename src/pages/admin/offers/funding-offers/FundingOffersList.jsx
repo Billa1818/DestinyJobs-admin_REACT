@@ -16,17 +16,27 @@ const FundingOffersList = () => {
     const [filterAdminOnly, setFilterAdminOnly] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const [pageSize] = useState(10);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterStatus, filterAdminOnly, searchTerm]);
 
     useEffect(() => {
         loadOffers();
-    }, [filterStatus, filterAdminOnly]);
+    }, [filterStatus, filterAdminOnly, searchTerm, currentPage]);
 
     const loadOffers = async () => {
         try {
             setLoading(true);
 
             // Construire les paramètres de filtre
-            const params = {};
+            const params = {
+                page: currentPage,
+                page_size: pageSize
+            };
             if (filterStatus !== 'ALL') {
                 params.status = filterStatus;
             }
@@ -36,18 +46,26 @@ const FundingOffersList = () => {
                 params.is_admin_only = 'true';
             }
 
+            // Ajouter la recherche
+            if (searchTerm.trim()) {
+                params.search = searchTerm.trim();
+            }
+
             // Récupérer les offres via l'endpoint admin
             const data = await getAdminFundingOffers(params);
 
             // Gérer la réponse structurée de l'API
             if (data.results && Array.isArray(data.results)) {
                 setOffers(data.results);
+                setTotalCount(data.count || data.results.length);
                 setStatistics(data.admin_statistics || null);
             } else if (Array.isArray(data)) {
                 setOffers(data);
+                setTotalCount(data.length);
                 setStatistics(null);
             } else {
                 setOffers([]);
+                setTotalCount(0);
                 setStatistics(null);
             }
             setError(null);
@@ -60,11 +78,7 @@ const FundingOffersList = () => {
         }
     };
 
-    const filteredOffers = offers.filter(offer => {
-        const matchesSearch = offer.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            offer.organization_name?.toLowerCase().includes(searchTerm.toLowerCase());
-        return matchesSearch;
-    });
+    const totalPages = Math.ceil(totalCount / pageSize);
 
     const toggleSelection = (offerId) => {
         const newSelected = new Set(selectedOffers);
@@ -77,10 +91,10 @@ const FundingOffersList = () => {
     };
 
     const toggleSelectAll = () => {
-        if (selectedOffers.size === filteredOffers.length) {
+        if (selectedOffers.size === offers.length) {
             setSelectedOffers(new Set());
         } else {
-            setSelectedOffers(new Set(filteredOffers.map(o => o.id)));
+            setSelectedOffers(new Set(offers.map(o => o.id)));
         }
     };
 
@@ -276,7 +290,7 @@ const FundingOffersList = () => {
                                 <th className="px-6 py-3">
                                     <input
                                         type="checkbox"
-                                        checked={selectedOffers.size === filteredOffers.length && filteredOffers.length > 0}
+                                        checked={selectedOffers.size === offers.length && offers.length > 0}
                                         onChange={toggleSelectAll}
                                         className="w-4 h-4 rounded"
                                     />
@@ -291,7 +305,7 @@ const FundingOffersList = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredOffers.length === 0 ? (
+                            {offers.length === 0 ? (
                                 <tr>
                                     <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
                                         <i className="fas fa-inbox text-4xl mb-4 block opacity-50"></i>
@@ -299,7 +313,7 @@ const FundingOffersList = () => {
                                     </td>
                                 </tr>
                             ) : (
-                                filteredOffers.map((offer) => (
+                                offers.map((offer) => (
                                     <tr key={offer.id} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4">
                                             <input
@@ -405,6 +419,47 @@ const FundingOffersList = () => {
                             )}
                         </tbody>
                     </table>
+
+                    {/* Pagination */}
+                    {offers.length > 0 && (
+                        <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+                            <div className="text-sm text-gray-600">
+                                Affichage {(currentPage - 1) * pageSize + 1} à {Math.min(currentPage * pageSize, totalCount)} sur {totalCount} offres
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    disabled={currentPage === 1}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <i className="fas fa-chevron-left"></i>
+                                </button>
+                                
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                                    <button
+                                        key={page}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`px-3 py-2 rounded-lg font-medium transition-colors ${
+                                            page === currentPage
+                                                ? 'bg-fuchsia-600 text-white'
+                                                : 'border border-gray-300 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                                
+                                <button
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <i className="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

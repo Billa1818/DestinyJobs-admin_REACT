@@ -15,22 +15,37 @@ const ScholarshipsList = () => {
   const [filterAdminOnly, setFilterAdminOnly] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [pageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus, filterAdminOnly, searchTerm]);
 
   useEffect(() => {
     loadOffers();
-  }, [filterStatus, filterAdminOnly]);
+  }, [filterStatus, filterAdminOnly, searchTerm, currentPage]);
 
   const loadOffers = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const params = {};
+      const params = {
+        page: currentPage,
+        page_size: pageSize
+      };
       if (filterStatus !== 'ALL') {
         params.status = filterStatus;
       }
       if (filterAdminOnly) {
         params.is_admin_only = 'true';
+      }
+
+      // Ajouter la recherche
+      if (searchTerm.trim()) {
+        params.search = searchTerm.trim();
       }
       
       const data = await bourseService.getAdminScholarships(params);
@@ -39,6 +54,7 @@ const ScholarshipsList = () => {
       if (data && typeof data === 'object') {
         const results = Array.isArray(data.results) ? data.results : [];
         setOffers(results);
+        setTotalCount(data.count || results.length);
         
         // Définir les statistiques si disponibles
         if (data.admin_statistics) {
@@ -47,8 +63,10 @@ const ScholarshipsList = () => {
       } else if (Array.isArray(data)) {
         // Si c'est directement un array
         setOffers(data);
+        setTotalCount(data.length);
       } else {
         setOffers([]);
+        setTotalCount(0);
       }
     } catch (err) {
       console.error('Erreur:', err);
@@ -59,11 +77,7 @@ const ScholarshipsList = () => {
     }
   };
 
-  const filteredOffers = offers.filter(offer => {
-    const matchesSearch = offer.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         offer.organization_name?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesSearch;
-  });
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   const toggleSelection = (offerId) => {
     const newSelected = new Set(selectedOffers);
@@ -76,10 +90,10 @@ const ScholarshipsList = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedOffers.size === filteredOffers.length) {
+    if (selectedOffers.size === offers.length) {
       setSelectedOffers(new Set());
     } else {
-      setSelectedOffers(new Set(filteredOffers.map(o => o.id)));
+      setSelectedOffers(new Set(offers.map(o => o.id)));
     }
   };
 
@@ -290,7 +304,7 @@ const ScholarshipsList = () => {
             <div className="col-span-1 flex items-center">
               <input
                 type="checkbox"
-                checked={selectedOffers.size === filteredOffers.length && filteredOffers.length > 0}
+                checked={selectedOffers.size === offers.length && offers.length > 0}
                 onChange={toggleSelectAll}
                 className="w-5 h-5 rounded cursor-pointer"
               />
@@ -303,14 +317,14 @@ const ScholarshipsList = () => {
           </div>
 
           {/* Items */}
-          {filteredOffers.length === 0 ? (
+          {offers.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <i className="fas fa-inbox text-6xl mb-4 block opacity-20 text-gray-400"></i>
               <p className="text-gray-500 text-lg">Aucune bourse trouvée</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {filteredOffers.map((offer) => (
+              {offers.map((offer) => (
                 <div
                   key={offer.id}
                   className="grid grid-cols-12 gap-4 p-4 items-center hover:bg-gray-50 transition-colors"
@@ -427,6 +441,47 @@ const ScholarshipsList = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {offers.length > 0 && (
+            <div className="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+              <div className="text-sm text-gray-600">
+                Affichage {(currentPage - 1) * pageSize + 1} à {Math.min(currentPage * pageSize, totalCount)} sur {totalCount} bourses
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <i className="fas fa-chevron-left"></i>
+                </button>
+                
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-3 py-2 rounded-lg font-medium transition-colors ${
+                      page === currentPage
+                        ? 'bg-fuchsia-600 text-white'
+                        : 'border border-gray-300 hover:bg-gray-100'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <i className="fas fa-chevron-right"></i>
+                </button>
+              </div>
             </div>
           )}
         </div>
