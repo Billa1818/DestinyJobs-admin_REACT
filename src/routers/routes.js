@@ -3,9 +3,8 @@ export const ROUTES = {
   // Routes publiques
   PUBLIC: {
     LOGIN: '/login',
-    REGISTER: '/register',
-            FORGOT_PASSWORD: '/forgot-password',
-        RESET_PASSWORD: '/reset-password',
+    FORGOT_PASSWORD: '/forgot-password',
+    RESET_PASSWORD: '/reset-password',
   },
 
   // Routes protégées (admin)

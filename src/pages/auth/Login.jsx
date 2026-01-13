@@ -162,31 +162,12 @@ const Login = () => {
             </div>
           </form>
 
-          {/* Liens supplémentaires */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Nouveau sur Destiny Jobs ?</span>
-              </div>
-            </div>
 
-            <div className="mt-6 text-center">
-              <Link
-                to={ROUTES.PUBLIC.REGISTER}
-                className="font-medium text-fuchsia-600 hover:text-fuchsia-500"
-              >
-                Créer un compte administrateur
-              </Link>
-            </div>
-          </div>
         </div>
 
         {/* Footer */}
         <div className="text-center text-sm text-gray-600">
-          <p>&copy; 2024 Destiny Jobs. Tous droits réservés.</p>
+          <p>&copy; 2026 Destiny Jobs. Tous droits réservés.</p>
         </div>
       </div>
     </div>
