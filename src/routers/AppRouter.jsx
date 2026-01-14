@@ -126,8 +126,11 @@ const AppRouter = () => {
         </ProtectedRoute>
       } />
 
+      {/* Redirection de la racine vers le dashboard */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
       {/* Redirection des routes non trouvées */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   )
 }
