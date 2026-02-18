@@ -49,7 +49,24 @@ import Notifications from '../pages/notifications/Notifications';
 import AccessDenied from '../components/AccessDenied';
 import ConfirmDialog from '../components/ConfirmDialog';
 
-// Composant de protection des routes
+const normalizeRole = (value) =>
+  typeof value === 'string' ? value.trim().toUpperCase() : '';
+
+const isGestionnaireUser = (user) => {
+  const currentUser = user?.user || user;
+  if (!currentUser) return false;
+
+  const roleCandidates = [
+    currentUser.user_type,
+    currentUser.role,
+    currentUser.account_type,
+    currentUser.profile_type,
+  ].map(normalizeRole);
+
+  return roleCandidates.includes('GESTIONNAIRE');
+};
+
+// Composant de protection des routes (routes protégées)
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isAdmin, loading } = useAuth();
   
@@ -72,14 +89,44 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const RecruitersRoute = ({ children }) => {
+  const { user } = useAuth();
+
+  if (isGestionnaireUser(user)) {
+    return <Navigate to="/offers" replace />;
+  }
+
+  return children;
+};
+
+// Composant de route publique (redirection utilisateur connecté)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-600"></div>
+      </div>
+    );
+  }
+  
+  // Si utilisateur connecté, rediriger vers dashboard
+  if (isAuthenticated()) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
+};
+
 // Composant de routage principal
 const AppRouter = () => {
   return (
     <Routes>
-      {/* Routes publiques */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
+      {/* Routes publiques (avec redirection si connecté) */}
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+      <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+      <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
       {/* Routes protégées avec BaseLayout */}
       <Route path="/*" element={
@@ -88,10 +135,10 @@ const AppRouter = () => {
             <Routes>
               {/* Routes protégées */}
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="recruiters" element={<Recruiters />} />
-              <Route path="recruiters/create" element={<RecruiterCreate />} />
-              <Route path="recruiters/:id/edit" element={<RecruiterEdit />} />
-              <Route path="recruiters/:id" element={<RecruiterDetail />} />
+              <Route path="recruiters" element={<RecruitersRoute><Recruiters /></RecruitersRoute>} />
+              <Route path="recruiters/create" element={<RecruitersRoute><RecruiterCreate /></RecruitersRoute>} />
+              <Route path="recruiters/:id/edit" element={<RecruitersRoute><RecruiterEdit /></RecruitersRoute>} />
+              <Route path="recruiters/:id" element={<RecruitersRoute><RecruiterDetail /></RecruitersRoute>} />
               <Route path="blog" element={<Blog />} />
               <Route path="blog/create" element={<BlogCreate />} />
               <Route path="blog/edit/:slug" element={<BlogEdit />} />
@@ -100,6 +147,7 @@ const AppRouter = () => {
               <Route path="offers" element={<OffersIndex />} />
               <Route path="offers/job-offers" element={<JobOffersList />} />
               <Route path="offers/job-offers/create" element={<JobOfferCreate />} />
+              <Route path="offers/job-offers/:id/edit" element={<JobOfferCreate />} />
               <Route path="offers/job-offers/:id" element={<JobOfferDetail />} />
               <Route path="offers/consultation-offers" element={<ConsultationOffersList />} />
               <Route path="offers/consultation-offers/create" element={<ConsultationOffersCreate />} />

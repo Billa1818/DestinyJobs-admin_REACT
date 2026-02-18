@@ -196,7 +196,30 @@ export const AuthProvider = ({ children }) => {
 
   // Vérifier si l'utilisateur est admin
   const isAdmin = () => {
-    return user && (user.user_type === 'ADMIN' || user.is_staff === true)
+    if (!user) return false
+
+    const normalizedRole = (value) =>
+      typeof value === 'string' ? value.trim().toUpperCase() : ''
+
+    // Compatibilité avec plusieurs formats de payload backend
+    const currentUser = user.user || user
+    const roleCandidates = [
+      currentUser.user_type,
+      currentUser.role,
+      currentUser.account_type,
+      currentUser.profile_type,
+    ].map(normalizedRole)
+
+    const hasAllowedRole = roleCandidates.some((role) =>
+      ['ADMIN', 'GESTIONNAIRE'].includes(role)
+    )
+
+    return (
+      hasAllowedRole ||
+      currentUser.is_staff === true ||
+      currentUser.is_superuser === true ||
+      currentUser.is_admin === true
+    )
   }
 
   // Vérifier si l'utilisateur est connecté

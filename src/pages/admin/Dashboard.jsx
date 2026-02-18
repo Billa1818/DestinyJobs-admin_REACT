@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { statsService } from '../../services';
+import { useAuth } from '../../contexts/AuthContext';
 import StatCard from '../../components/StatCard';
 import AdvancedStatCard from '../../components/AdvancedStatCard';
 import MultiMetricCard from '../../components/MultiMetricCard';
@@ -7,13 +8,29 @@ import CircularProgressCard from '../../components/CircularProgressCard';
 import Loader from '../../components/Loader';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({});
 
+  const normalizedRole = (value) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : '';
+  const currentUser = user?.user || user;
+  const isGestionnaire = [
+    currentUser?.user_type,
+    currentUser?.role,
+    currentUser?.account_type,
+    currentUser?.profile_type,
+  ].map(normalizedRole).includes('GESTIONNAIRE');
+
   useEffect(() => {
+    if (isGestionnaire) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
     loadDashboardData();
-  }, []);
+  }, [isGestionnaire]);
 
   const loadDashboardData = async () => {
     try {
@@ -88,6 +105,24 @@ export default function Dashboard() {
       default: return 'text-gray-600';
     }
   };
+
+  if (isGestionnaire) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-xl shadow border border-gray-100 p-8 text-center">
+            <div className="mx-auto w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
+              <i className="fas fa-handshake text-2xl"></i>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Bienvenue</h1>
+            <p className="text-gray-600">
+              Bonjour {currentUser?.first_name || currentUser?.username || 'Gestionnaire'}, vous etes connecte a l'interface admin.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return <Loader size="lg" text="Chargement des statistiques..." color="indigo" />;

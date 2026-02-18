@@ -1,11 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { ROUTES } from '../../../../routers';
 import Loader from '../../../../components/Loader';
 import jobOfferService from '../../../../services/jobOfferService';
 
+const INITIAL_FORM_DATA = {
+  title: '',
+  position_name: '',
+  department: '',
+  category: '',
+  contract_type: '',
+  experience_required: '',
+  location: '',
+  work_mode: '',
+  salary_type: '',
+  salary_min: '',
+  salary_max: '',
+  description: '',
+  profile_sought: '',
+  additional_info: '',
+  application_deadline: '',
+  cv_required: false,
+  motivation_letter_required: false,
+  country: '',
+  region: '',
+  job_function: '',
+  activity_sector: '',
+  closing_date: '',
+  site_url: '',
+  company_website_url: '',
+  is_admin_only: true,
+  admin_company_logo: null,
+};
+
 const JobOfferCreate = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const isEditing = Boolean(id);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -18,34 +49,7 @@ const JobOfferCreate = () => {
   const [countries, setCountries] = useState([]);
   const [regions, setRegions] = useState([]);
 
-  const [formData, setFormData] = useState({
-    title: '',
-    position_name: '',
-    department: '',
-    category: '',
-    contract_type: '',
-    experience_required: '',
-    location: '',
-    work_mode: '',
-    salary_type: '',
-    salary_min: '',
-    salary_max: '',
-    description: '',
-    profile_sought: '',
-    additional_info: '',
-    application_deadline: '',
-    cv_required: false,
-    motivation_letter_required: false,
-    country: '',
-    region: '',
-    job_function: '',
-    activity_sector: '',
-    closing_date: '',
-    site_url: '',
-    company_website_url: '',
-    is_admin_only: true, // Toujours true, non affiché
-    admin_company_logo: null, // Obligatoire
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
 
   // Fonction utilitaire pour extraire les données (array direct ou objet avec results)
   const extractData = (data) => {
@@ -53,10 +57,54 @@ const JobOfferCreate = () => {
     return data?.results || [];
   };
 
-  // Charger les métadonnées au montage
+  const getRelationId = (value) => {
+    if (!value) return '';
+    if (typeof value === 'object') return value.id || '';
+    return value;
+  };
+
+  const formatDatetimeLocal = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+
+  const mapOfferToFormData = (offer) => ({
+    title: offer.title || '',
+    position_name: offer.position_name || '',
+    department: getRelationId(offer.department),
+    category: getRelationId(offer.category),
+    contract_type: offer.contract_type || '',
+    experience_required: offer.experience_required || '',
+    location: offer.location || '',
+    work_mode: offer.work_mode || '',
+    salary_type: offer.salary_type || '',
+    salary_min: offer.salary_min ?? '',
+    salary_max: offer.salary_max ?? '',
+    description: offer.description || '',
+    profile_sought: offer.profile_sought || '',
+    additional_info: offer.additional_info || '',
+    application_deadline: formatDatetimeLocal(offer.application_deadline),
+    cv_required: Boolean(offer.cv_required),
+    motivation_letter_required: Boolean(offer.motivation_letter_required),
+    country: getRelationId(offer.country),
+    region: getRelationId(offer.region),
+    job_function: getRelationId(offer.job_function),
+    activity_sector: getRelationId(offer.activity_sector),
+    closing_date: formatDatetimeLocal(offer.closing_date),
+    site_url: offer.site_url || '',
+    company_website_url: offer.company_website_url || '',
+    is_admin_only: offer.is_admin_only ?? true,
+    admin_company_logo: null,
+  });
+
+  // Charger les métadonnées et éventuellement l'offre à éditer
   useEffect(() => {
-    loadMetadata();
-  }, []);
+    loadInitialData();
+  }, [id]);
 
   // Charger les catégories quand le département change
   useEffect(() => {
@@ -78,24 +126,30 @@ const JobOfferCreate = () => {
     }
   }, [formData.country]);
 
-  const loadMetadata = async () => {
+  const loadInitialData = async () => {
     try {
       setLoading(true);
-      const [deptData, jobFuncData, sectorsData, countriesData] = await Promise.all([
+      const [deptData, jobFuncData, sectorsData, countriesData, offerData] = await Promise.all([
         jobOfferService.getDepartments(),
         jobOfferService.getJobFunctions(),
         jobOfferService.getActivitySectors(),
         jobOfferService.getCountries(),
+        isEditing ? jobOfferService.getJobOfferDetail(id) : Promise.resolve(null),
       ]);
 
       setDepartments(extractData(deptData));
       setJobFunctions(extractData(jobFuncData));
       setActivitySectors(extractData(sectorsData));
       setCountries(extractData(countriesData));
+
+      if (offerData) {
+        setFormData(mapOfferToFormData(offerData));
+      }
+
       setError(null);
     } catch (err) {
       setError(err.message || 'Erreur lors du chargement des données');
-      console.error('Erreur chargement métadonnées:', err);
+      console.error('Erreur chargement données:', err);
     } finally {
       setLoading(false);
     }
@@ -125,7 +179,7 @@ const JobOfferCreate = () => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (value === '' ? null : value)
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -134,7 +188,10 @@ const JobOfferCreate = () => {
     setError(null);
 
     // Validation des champs obligatoires
-    const requiredFields = ['title', 'position_name', 'location', 'contract_type', 'experience_required', 'work_mode', 'salary_type', 'description', 'admin_company_logo'];
+    const requiredFields = ['title', 'position_name', 'location', 'contract_type', 'experience_required', 'work_mode', 'salary_type', 'description'];
+    if (!isEditing) {
+      requiredFields.push('admin_company_logo');
+    }
     const missingFields = requiredFields.filter(field => !formData[field]);
 
     if (missingFields.length > 0) {
@@ -179,11 +236,15 @@ const JobOfferCreate = () => {
 
     try {
       setSubmitting(true);
-      await jobOfferService.createJobOffer(formDataToSend);
+      if (isEditing) {
+        await jobOfferService.updateJobOffer(id, formDataToSend);
+      } else {
+        await jobOfferService.createJobOffer(formDataToSend);
+      }
       navigate(ROUTES.ADMIN.OFFERS.JOB_OFFERS.LIST);
     } catch (err) {
-      setError(err.message || 'Erreur lors de la création de l\'offre');
-      console.error('Erreur création offre:', err);
+      setError(err.message || `Erreur lors de la ${isEditing ? 'modification' : 'création'} de l'offre`);
+      console.error(`Erreur ${isEditing ? 'modification' : 'création'} offre:`, err);
     } finally {
       setSubmitting(false);
     }
@@ -203,8 +264,12 @@ const JobOfferCreate = () => {
             <i className="fas fa-chevron-left"></i>
             <span>Retour aux offres</span>
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Créer une nouvelle offre d'emploi</h1>
-          <p className="text-gray-600 mt-1">Remplissez le formulaire pour créer une offre d'emploi</p>
+          <h1 className="text-3xl font-bold text-gray-900">
+            {isEditing ? 'Modifier l\'offre d\'emploi' : 'Créer une nouvelle offre d\'emploi'}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {isEditing ? 'Modifiez les informations de cette offre d\'emploi' : 'Remplissez le formulaire pour créer une offre d\'emploi'}
+          </p>
         </div>
 
         {/* Error Alert */}
@@ -644,10 +709,10 @@ const JobOfferCreate = () => {
 
           {/* Company Logo */}
           <div className="px-8 py-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Logo de l'entreprise *</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Logo de l'entreprise {isEditing ? '' : '*'}</h2>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Logo de l'entreprise *
+                Logo de l'entreprise {isEditing ? '(laisser vide pour conserver le logo actuel)' : '*'}
               </label>
               <input
                 type="file"
@@ -661,7 +726,7 @@ const JobOfferCreate = () => {
                 }}
                 accept="image/*"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
-                required
+                required={!isEditing}
               />
               <p className="text-xs text-gray-500 mt-2">Formats acceptés: JPG, PNG, GIF, SVG, etc.</p>
               {formData.admin_company_logo && (
@@ -687,7 +752,9 @@ const JobOfferCreate = () => {
               disabled={submitting}
             >
               <i className="fas fa-check mr-2"></i>
-              {submitting ? 'Création en cours...' : 'Créer l\'offre'}
+              {submitting
+                ? (isEditing ? 'Modification en cours...' : 'Création en cours...')
+                : (isEditing ? 'Mettre à jour l\'offre' : 'Créer l\'offre')}
             </button>
           </div>
         </form>

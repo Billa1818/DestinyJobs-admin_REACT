@@ -469,7 +469,7 @@ const ConsultationOffersCreate = () => {
         {/* Info Note */}
         <p className="text-xs text-gray-500 mt-4 text-center">
           <i className="fas fa-info-circle mr-1"></i>
-          <strong>Statut initial:</strong> {user?.user_type === 'ADMIN' ? 'DRAFT (brouillon)' : 'PENDING_APPROVAL (en attente d\'approbation admin)'}
+          <strong>Statut initial:</strong> {['ADMIN', 'GESTIONNAIRE'].includes(user?.user_type) ? 'DRAFT (brouillon)' : 'PENDING_APPROVAL (en attente d\'approbation admin)'}
         </p>
       </div>
     </div>

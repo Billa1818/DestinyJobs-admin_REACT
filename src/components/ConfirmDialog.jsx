@@ -1,4 +1,5 @@
 import React from 'react'
+import { createPortal } from 'react-dom'
 
 const ConfirmDialog = ({ 
   isOpen, 
@@ -8,12 +9,14 @@ const ConfirmDialog = ({
   message, 
   confirmText = 'Confirmer', 
   cancelText = 'Annuler',
-  confirmVariant = 'danger' // 'danger', 'warning', 'info'
+  confirmVariant = 'danger' // 'danger', 'warning', 'info', 'success'
 }) => {
   if (!isOpen) return null
 
   const getButtonClasses = () => {
     switch (confirmVariant) {
+      case 'success':
+        return 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
       case 'danger':
         return 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
       case 'warning':
@@ -27,6 +30,8 @@ const ConfirmDialog = ({
 
   const getIcon = () => {
     switch (confirmVariant) {
+      case 'success':
+        return 'fas fa-check-circle text-green-600'
       case 'danger':
         return 'fas fa-exclamation-triangle text-red-600'
       case 'warning':
@@ -38,17 +43,17 @@ const ConfirmDialog = ({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         {/* Overlay */}
         <div 
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
+          className="fixed inset-0 z-40 bg-gray-500 bg-opacity-75 transition-opacity" 
           onClick={onClose}
         ></div>
 
         {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+        <div className="relative z-50 inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
               <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -87,6 +92,9 @@ const ConfirmDialog = ({
       </div>
     </div>
   )
+
+  if (typeof document === 'undefined') return modalContent
+  return createPortal(modalContent, document.body)
 }
 
 export default ConfirmDialog 

@@ -16,7 +16,6 @@ export default function Blog() {
     ordering: '-created_at'
   });
   const [categories, setCategories] = useState([]);
-  const [stats, setStats] = useState(null);
 
   // Charger les articles et données initiales
   useEffect(() => {
@@ -35,10 +34,6 @@ export default function Blog() {
       // Charger les catégories
       const categoriesData = await blogService.getCategories();
       setCategories(categoriesData);
-
-      // Charger les statistiques
-      const statsData = await blogService.getBlogStats();
-      setStats(statsData);
 
     } catch (err) {
       console.error('Erreur lors du chargement des données du blog:', err);
@@ -129,42 +124,6 @@ export default function Blog() {
             </Link>
           </div>
 
-          {/* Statistiques */}
-          {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <i className="fas fa-newspaper text-2xl text-blue-600"></i>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Total Articles</dt>
-                        <dd className="text-lg font-medium text-gray-900">{stats.total_posts || 0}</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="p-5">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <i className="fas fa-eye text-2xl text-green-600"></i>
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Total Vues</dt>
-                        <dd className="text-lg font-medium text-gray-900">{stats.total_views || 0}</dd>
-                      </dl>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Filtres */}

@@ -139,7 +139,11 @@ class JobOfferService {
    */
   async updateJobOffer(offerId, updateData) {
     try {
-      const response = await apiClient.patch(`/api/jobs/job-offers/${offerId}/`, updateData);
+      const isFormData = updateData instanceof FormData;
+      const config = isFormData
+        ? { headers: { 'Content-Type': 'multipart/form-data' }, transformRequest: (data) => data }
+        : {};
+      const response = await apiClient.patch(`/api/jobs/job-offers/${offerId}/`, updateData, config);
       return response;
     } catch (error) {
       throw this.handleError(error, 'Erreur lors de la modification de l\'offre');

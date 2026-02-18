@@ -14,6 +14,19 @@ const Header = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState({});
 
+  const normalizedRole = (value) =>
+    typeof value === 'string' ? value.trim().toUpperCase() : '';
+  const currentUser = user?.user || user;
+  const isGestionnaire = [
+    currentUser?.user_type,
+    currentUser?.role,
+    currentUser?.account_type,
+    currentUser?.profile_type,
+  ].map(normalizedRole).includes('GESTIONNAIRE');
+  const mainMenus = isGestionnaire
+    ? NAVIGATION_MENUS.MAIN.filter((menu) => menu.id !== 'recruiters')
+    : NAVIGATION_MENUS.MAIN;
+
   // Fermer les menus mobiles au redimensionnement de l'écran
   useEffect(() => {
     const handleResize = () => {
@@ -100,7 +113,7 @@ const Header = () => {
 
           {/* Navigation Desktop */}
           <nav className="hidden xl:flex flex-1 justify-center space-x-4 2xl:space-x-6">
-            {NAVIGATION_MENUS.MAIN.map((menu) => (
+            {mainMenus.map((menu) => (
               <div key={menu.id}>
                 {menu.children ? (
                   <div className="relative group">
@@ -268,7 +281,7 @@ const Header = () => {
       {mobileMenuOpen && (
         <div className="xl:hidden bg-white border-t border-gray-200">
           <div className="px-2 py-2 space-y-1">
-            {NAVIGATION_MENUS.MAIN.map((menu) => (
+            {mainMenus.map((menu) => (
               <div key={menu.id}>
                 {menu.children ? (
                   <div>
